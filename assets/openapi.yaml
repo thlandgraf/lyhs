@@ -1,0 +1,112 @@
+openapi: 3.1.0
+info:
+  title: Project Structuring Framework API
+  description: >
+    A RESTful API for managing hierarchical work packages and linking Gherkin requirements to goals,
+    as defined in the KAOS model. Each work package has an ID, which is repersented like a filepath,
+    The ID MUST always end with .req.md
+  version: 1.0.0
+servers:
+  - url: https://lyhs3000.loca.lt/
+    description: Local development server
+paths:
+  /work-packages:
+    post:
+      operationId: createWorkPackage
+      summary: Create a new work package
+      description: Create a new work package with the specified details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewWorkPackage'
+      responses:
+        '201':
+          description: Created work package details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  parentPackagePath:
+                    type: string
+        '400':
+          description: Invalid input data
+    get:
+      operationId: listWorkPackages
+      summary: List all work packages
+      description: Retrieve a list of all work packages, optionally filtered by parent package.
+      responses:
+        "200":
+          description: List of work package IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkPackage'
+      security:
+        - basicAuth: []
+  /work-packages/{id}:
+    get:
+      operationId: retrieveWorkPackage
+      summary: Retrieve work package details
+      description: Retrieve details of a specific work package by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Work package details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of that work package. The ID must end with .req.md
+                  content:
+                    type: string
+                    description: The Content formatted as Markdown; look up the links as references to other work packages
+        '404':
+          description: Work package not found
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    WorkPackage:
+      type: object
+      properties:
+        id:
+          type: string
+        path:
+          type: string
+    NewWorkPackage:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "OPS-CALL.req.md"
+          pattern: '^[^/\\:*?"<>|]+\.req\.md$'
+          description: the ID of the new workpackage
+        content:
+          type: string
+          description: In markdown formatted content of that work-package
+        path:
+          type: string
+          description: the optional path, if you want to put it into a subfolder
+
+

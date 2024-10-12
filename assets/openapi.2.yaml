@@ -1,0 +1,214 @@
+openapi: 3.1.0
+info:
+  title: Project Structuring Framework API
+  description: A RESTful API for managing hierarchical work packages and linking Gherkin requirements to goals, as defined in the KAOS model.
+  version: 1.0.0
+servers:
+  - url:  https://lyhs3000.loca.lt/
+    description: Local development server
+paths:
+  /work-packages:
+    post:
+      operationId: createWorkPackage
+      summary: Create a new work package
+      description: Create a new work package with the specified details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "New Work Package"
+                description:
+                  type: string
+                  example: "This is a description of the new work package."
+                parentPackagePath:
+                  type: string
+                  description: "Optional path to the parent work package"
+                  example: "/parent/package"
+      responses:
+        '201':
+          description: Created work package details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  parentPackagePath:
+                    type: string
+        '400':
+          description: Invalid input data
+    get:
+      operationId: listWorkPackages
+      summary: List all work packages
+      description: Retrieve a list of all work packages, optionally filtered by parent package.
+      parameters:
+        - name: parentPackagePath
+          in: query
+          description: Filter work packages by parent directory path
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of work packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    parentPackagePath:
+                      type: string
+  /work-packages/{id}:
+    get:
+      operationId: retrieveWorkPackage
+      summary: Retrieve work package details
+      description: Retrieve details of a specific work package by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Work package details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  parentPackagePath:
+                    type: string
+        '404':
+          description: Work package not found
+    put:
+      operationId: updateWorkPackage
+      summary: Update a work package
+      description: Update the details of an existing work package by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Work Package"
+                description:
+                  type: string
+                  example: "This is the updated description of the work package."
+                parentPackagePath:
+                  type: string
+                  description: "Optional updated path to the parent work package"
+      responses:
+        '200':
+          description: Updated work package details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  parentPackagePath:
+                    type: string
+        '404':
+          description: Work package not found
+    delete:
+      operationId: deleteWorkPackage
+      summary: Delete a work package
+      description: Delete a specific work package by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successfully deleted
+        '404':
+          description: Work package not found
+  /work-packages/{id}/link-requirement:
+    post:
+      operationId: linkRequirementToWorkPackage
+      summary: Link a requirement to a work package
+      description: Link a requirement markdown file to the specified work package by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requirementPath:
+                  type: string
+                  example: "/requirements/feature.requirement.md"
+      responses:
+        '200':
+          description: Updated work package details with linked requirement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  linkedRequirements:
+                    type: array
+                    items:
+                      type: string
+        '404':
+          description: Work package not found
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+security:
+  - basicAuth: []
